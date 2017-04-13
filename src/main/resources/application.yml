@@ -1,0 +1,17 @@
+security:
+  oauth2:
+    client:
+      clientId:
+      clientSecret:
+      accessTokenUri: https://www.linkedin.com/oauth/v2/accessToken?redirect_uri={redirect_uri}&grant_type={grant_type}&code={code}&client_id={client_id}&client_secret={client_secret}
+      userAuthorizationUri: https://www.linkedin.com/oauth/v2/authorization
+      tokenName: access_token
+      authenticationScheme: query
+      clientAuthenticationScheme: form
+    resource:
+      userInfoUri: https://api.linkedin.com/v1/people/~?format=json&email-address=bensender@gmail.com
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
