@@ -1,10 +1,10 @@
 security:
   oauth2:
     client:
-      clientId:
-      clientSecret:
+      clientId: my-client-id    
+      clientSecret: strongest-secret
       accessTokenUri: https://www.linkedin.com/oauth/v2/accessToken?redirect_uri={redirect_uri}&grant_type={grant_type}&code={code}&client_id={client_id}&client_secret={client_secret}
-      userAuthorizationUri: https://www.linkedin.com/oauth/v2/authorization
+      userAuthorizationUri: https://www.linkedin.com/oauth/v2/authorization?client_id=%s&response_type=code&redirect_uri=%s
       tokenName: access_token
       authenticationScheme: query
       clientAuthenticationScheme: form
@@ -15,3 +15,5 @@ logging:
     org:
       springframework:
         web: DEBUG
+    com:
+      confidin: DEBUG
