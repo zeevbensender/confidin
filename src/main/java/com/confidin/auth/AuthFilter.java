@@ -20,6 +20,7 @@ import java.io.IOException;
 public class AuthFilter implements Filter {
     private final static Logger LOG = LoggerFactory.getLogger(AuthFilter.class);
     private TokenValidator tokenValidator = new TokenValidator();
+    private FilterHelper filterHelper = new FilterHelper();
     private String clientId;
     private String clientSecret;
     private String authorizationUri;
@@ -41,7 +42,8 @@ public class AuthFilter implements Filter {
             filterChain.doFilter(request, response);
             return;
         }
-        resp.sendRedirect(String.format(authorizationUri, clientId, "http://localhost:8080"));
+//        resp.sendRedirect(String.format(authorizationUri, clientId, "http://localhost:8080"));
+        resp.sendRedirect(String.format(authorizationUri, clientId, filterHelper.getRootPage(req)));
     }
 
     @Override
