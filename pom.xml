@@ -75,7 +75,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>com.jcheatSheet.oauth2.simple.SocialApplication</mainClass>
+							<mainClass>com.confidin.Application</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
