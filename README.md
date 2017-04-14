@@ -1,6 +1,6 @@
 # confidin
 
-This web application utilizes the [https://oauth.net/2/](https://oauth.net/2/ "OAuth 2.0 protocol") for authentication with Linkedin 
+This web application utilizes the [https://oauth.net/2/](OAuth 2.0 protocol "OAuth 2.0 protocol") for authentication with Linkedin 
 
 1. Before running the server edit the *application.yml* file and set the *clientId* and *clientSecret* properties
 
