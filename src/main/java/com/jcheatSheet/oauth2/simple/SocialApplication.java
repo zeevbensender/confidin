@@ -16,6 +16,11 @@ import java.security.Principal;
 @RestController
 public class SocialApplication extends WebSecurityConfigurerAdapter {
 
+	@RequestMapping("/login")
+	public Principal login(Principal principal) {
+		return principal;
+	}
+
 	@RequestMapping("/user")
 	public Principal user(Principal principal) {
 		return principal;
