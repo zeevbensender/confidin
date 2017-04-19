@@ -55,15 +55,17 @@ public class AccessTokenService {
             connection.setDoOutput(true);
             connection.setUseCaches(false);
             LOG.info("###### ENABLED PROTOCOLS ARE: {}", System.getProperty("https.protocols"));
+//            todo: remove the next line before production
+            LOG.info("###### THE REQUEST IS: {}", url.toString());
             PrintWriter out = new PrintWriter(connection.getOutputStream());
             out.write("");
             out.flush();
             out.close();
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                System.out.println("SUCCEEDED");
+                LOG.info("Access token request succeeded");
             }
             else{
-                System.out.println(connection.getResponseCode());
+                LOG.info("Access token request failed with {} code", connection.getResponseCode());
                 StringBuilder errBuffer = new StringBuilder();
                 BufferedReader errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream(), "UTF-8"));
                 String errorLine;
