@@ -50,6 +50,7 @@ public class AccessTokenService {
     public String obtainAccessToken(URL url){
         HttpURLConnection connection;
         try {
+            Thread.sleep(10000);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
@@ -93,6 +94,8 @@ public class AccessTokenService {
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to obtain access token", e);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
     }
