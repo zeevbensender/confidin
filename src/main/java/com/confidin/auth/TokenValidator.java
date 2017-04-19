@@ -1,8 +1,8 @@
 package com.confidin.auth;
 
-import javax.servlet.http.Cookie;
+import com.confidin.config.FilterConfiguration;
+
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -10,12 +10,9 @@ import java.util.Optional;
  */
 public class TokenValidator {
     public boolean validateToken(HttpServletRequest req){
-        String accessToken = Arrays.stream(Optional.ofNullable(req.getCookies()).map(cc -> cc).orElse(new Cookie[]{})).
-                filter(coo -> coo.getName().equals("access_token")).findFirst().map(Cookie::getValue).orElse(null);
-        if(accessToken != null){
-//            todo: add actual token validation
-            return true;
-        }
-        return false;
+
+        return Optional.ofNullable(req.getSession(true).getAttribute(FilterConfiguration.ACCESS_TOKEN)).
+                map(t -> !((String)t).isEmpty()).
+                orElse(false);
     }
 }
