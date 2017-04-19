@@ -92,10 +92,8 @@ public class AccessTokenService {
             return sb.toString();
 
 
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Failed to obtain access token", e);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
 
     }
