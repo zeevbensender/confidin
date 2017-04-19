@@ -50,14 +50,11 @@ public class AccessTokenService {
     public String obtainAccessToken(URL url){
         HttpURLConnection connection;
         try {
-            Thread.sleep(10000);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
             connection.setUseCaches(false);
-            LOG.info("###### ENABLED PROTOCOLS ARE: {}", System.getProperty("https.protocols"));
-//            todo: remove the next line before production
-            LOG.info("###### THE REQUEST IS: {}", url.toString());
+            LOG.trace("###### THE REQUEST IS: {}", url.toString());
             PrintWriter out = new PrintWriter(connection.getOutputStream());
             out.write("");
             out.flush();
@@ -74,6 +71,8 @@ public class AccessTokenService {
                     errBuffer.append(errorLine);
                 }
                 String message = "Failed to obtain access token: \n" + errBuffer;
+                if(errBuffer.indexOf("authorization code expired") >= 0)
+                    return null;
                 LOG.error(message);
             }
             String respEnc = connection.getContentEncoding();
@@ -92,7 +91,7 @@ public class AccessTokenService {
             return sb.toString();
 
 
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Failed to obtain access token", e);
         }
 
