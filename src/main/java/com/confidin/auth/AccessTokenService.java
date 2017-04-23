@@ -1,5 +1,7 @@
 package com.confidin.auth;
 
+import com.confidin.api.ApiCallResult;
+import com.confidin.api.LinkedinClient;
 import com.confidin.config.FilterConfiguration;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -23,7 +25,10 @@ import java.util.zip.GZIPInputStream;
  */
 public class AccessTokenService {
     private final static Logger LOG = LoggerFactory.getLogger(AccessTokenService.class);
+//    todo: spring initialization
     private FilterHelper filterHelper = new FilterHelper();
+//    todo: spring initialization
+    private LinkedinClient client = new LinkedinClient();
     ObjectMapper mapper = new ObjectMapper();
     public URL buildAccessTokenUrl(String base, String code, String redirect, String clientId, String clientSecret) {
         String path = String.format("%s?grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s",
@@ -50,48 +55,13 @@ public class AccessTokenService {
     }
 
     public AccessToken obtainAccessToken(URL url){
-        HttpURLConnection connection;
         try {
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setDoOutput(true);
-            connection.setUseCaches(false);
-            LOG.trace("###### THE REQUEST IS: {}", url.toString());
-            PrintWriter out = new PrintWriter(connection.getOutputStream());
-            out.write("");
-            out.flush();
-            out.close();
-            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                LOG.info("Access token request succeeded");
-            }
-            else{
-                LOG.info("Access token request failed with {} code", connection.getResponseCode());
-                StringBuilder errBuffer = new StringBuilder();
-                BufferedReader errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream(), "UTF-8"));
-                String errorLine;
-                while ((errorLine = errorReader.readLine()) != null) {
-                    errBuffer.append(errorLine);
-                }
-                String message = "Failed to obtain access token: \n" + errBuffer;
-                if(errBuffer.indexOf("authorization code expired") >= 0)
-                    return null;
-                LOG.error(message);
-            }
-            String respEnc = connection.getContentEncoding();
-            InputStream is;
-            if (respEnc != null && respEnc.equalsIgnoreCase("gzip")) {
-                is = new GZIPInputStream(connection.getInputStream());
-            } else {
-                is = new BufferedInputStream(connection.getInputStream());
-            }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-            String li;
-            StringBuilder sb = new StringBuilder();
-            while ((li = reader.readLine()) != null) {
-                sb.append(li);
-            }
-            AccessToken token = mapper.readValue(sb.toString(), AccessToken.class);
-            token.setToken(sb.toString());
+            ApiCallResult response = client.invokeApi(url, "Access token");
+            if(response == null)
+                return null;
+
+            AccessToken token = mapper.readValue(response.getResponse() , AccessToken.class);
+            token.setToken(response.getResponse());
             return token;
 
 
