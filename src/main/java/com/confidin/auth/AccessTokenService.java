@@ -1,6 +1,7 @@
 package com.confidin.auth;
 
 import com.confidin.config.FilterConfiguration;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ import java.util.zip.GZIPInputStream;
 public class AccessTokenService {
     private final static Logger LOG = LoggerFactory.getLogger(AccessTokenService.class);
     private FilterHelper filterHelper = new FilterHelper();
+    ObjectMapper mapper = new ObjectMapper();
     public URL buildAccessTokenUrl(String base, String code, String redirect, String clientId, String clientSecret) {
         String path = String.format("%s?grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s",
                 base, code, redirect, clientId, clientSecret);
@@ -38,7 +40,7 @@ public class AccessTokenService {
         if(code == null || code.length() == 0)
             return false;
         URL url = buildAccessTokenUrl(accessTokenUri, code, filterHelper.getRootPage(req), clientId, clientSecret);
-        String token = obtainAccessToken(url);
+        AccessToken token = obtainAccessToken(url);
         if(token != null) {
             req.getSession().setAttribute(FilterConfiguration.ACCESS_TOKEN, token);
             LOG.info(">>>>>>>>>>>>>>>>>>>>>> token >>>>>>>>>>>> " + token);
@@ -47,7 +49,7 @@ public class AccessTokenService {
         return false;
     }
 
-    public String obtainAccessToken(URL url){
+    public AccessToken obtainAccessToken(URL url){
         HttpURLConnection connection;
         try {
             connection = (HttpURLConnection) url.openConnection();
@@ -88,7 +90,9 @@ public class AccessTokenService {
             while ((li = reader.readLine()) != null) {
                 sb.append(li);
             }
-            return sb.toString();
+            AccessToken token = mapper.readValue(sb.toString(), AccessToken.class);
+            token.setToken(sb.toString());
+            return token;
 
 
         } catch (IOException e) {
