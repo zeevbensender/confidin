@@ -12,7 +12,7 @@ public class TokenValidator {
     public boolean validateToken(HttpServletRequest req){
 
         return Optional.ofNullable(req.getSession(true).getAttribute(FilterConfiguration.ACCESS_TOKEN)).
-                map(t -> !((String)t).isEmpty()).
+                map(t -> t != null).
                 orElse(false);
     }
 }
