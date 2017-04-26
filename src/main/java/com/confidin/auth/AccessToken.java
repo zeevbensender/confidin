@@ -2,6 +2,8 @@ package com.confidin.auth;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.Date;
+
 /**
  * Created by bensende on 23/04/2017.
  */
@@ -44,5 +46,14 @@ public class AccessToken {
 
     public String getToken() {
         return token;
+    }
+
+    @Override
+    public String toString() {
+        return "AccessToken{" +
+                "value='" + value + '\'' +
+                ", expiresIn=" + expiresIn +
+                ", expirationTime=" + new Date(expirationTime) +
+                '}';
     }
 }
