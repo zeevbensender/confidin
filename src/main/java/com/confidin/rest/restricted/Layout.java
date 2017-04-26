@@ -1,5 +1,6 @@
 package com.confidin.rest.restricted;
 
+import com.confidin.api.ApiService;
 import com.confidin.model.UserProfile;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -9,9 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class Layout {
+    //    todo: spring initialization
+    ApiService apiService = new ApiService();
     @RequestMapping("/login")
-    public UserProfile user() {
-        return new UserProfile("ostap", "loggedin@confidin.com");
+    public String user() {
+        return apiService.getProfile();
     }
 
 }
