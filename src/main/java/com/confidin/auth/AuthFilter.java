@@ -1,6 +1,7 @@
 package com.confidin.auth;
 
 import com.confidin.config.FilterConfiguration;
+import com.confidin.util.CookieHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +28,7 @@ public class AuthFilter implements Filter {
     private String clientSecret;
     private String authorizationUri;
     private String accessTokenUri;
+    private SkipFilter skipFilter;
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         clientId = filterConfig.getInitParameter(FilterConfiguration.CLIENT_ID);
@@ -42,11 +44,24 @@ public class AuthFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
-        if(req.getRequestURI().toLowerCase().startsWith("/public") || tokenValidator.validateToken(req))   {
+        if(skipFilter.skipFilter(req.getRequestURI())){
+            LOG.debug("The servlet URI is {}. Skipping auth filter.", req.getRequestURI());
+            filterChain.doFilter(request, response);
+            return;
+        }
+        LOG.debug("\nInside doFilter. \nRequest URI: {}. \nSession ID: {}. \nReferrer: {}. \nAccess Token: {}",
+                req.getRequestURI(),
+                CookieHelper.getCookie("JSESSIONID", req),
+                req.getHeader("referer"),
+                req.getSession().getAttribute(FilterConfiguration.ACCESS_TOKEN)
+                );
+        if(tokenValidator.validateToken(req)){
+            LOG.debug("Token was found in the session. Proceeds to the next filter in the chain.");
             filterChain.doFilter(request, response);
             return;
         }
         if(tokenService.obtainAccessToken(req, accessTokenUri, clientId, clientSecret)){
+            LOG.debug("Successfully obtained token from LinkedIn. Proceeds to the next filter in the chain.");
             filterChain.doFilter(request, response);
             return;
         }
@@ -56,5 +71,13 @@ public class AuthFilter implements Filter {
     @Override
     public void destroy() {
 
+    }
+
+    public interface SkipFilter {
+        boolean skipFilter(String contextPath);
+    }
+
+    public void setSkipFilter(SkipFilter skipFilter) {
+        this.skipFilter = skipFilter;
     }
 }

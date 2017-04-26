@@ -46,7 +46,14 @@ public class FilterConfiguration {
 
     @Bean(name = "authFilter")
     public Filter oauth2Filter() {
-        return new AuthFilter();
+        AuthFilter filter = new AuthFilter();
+        filter.setSkipFilter(contextPath ->
+                contextPath.endsWith("favicon.ico") |
+                contextPath.endsWith(".js") |
+                contextPath.endsWith(".css") |
+                contextPath.startsWith("/public")
+        );
+        return filter;
     }
 
 }
