@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URL;
 
 /**
  * Created by bensende on 23/04/2017.
@@ -17,7 +16,7 @@ public class ApiService {
 
     public String getProfile(){
         try {
-            ApiCallResult result = client.getData(path, "Get Profile");
+            ApiCallResult result = client.sendGet(path, "Get Profile");
             return result.getResponse();
         } catch (IOException e) {
             LOG.error(e.getMessage());

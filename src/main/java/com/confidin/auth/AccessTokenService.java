@@ -22,22 +22,19 @@ public class AccessTokenService {
 //    todo: spring initialization
     private LinkedinClient client = new LinkedinClient();
     ObjectMapper mapper = new ObjectMapper();
-    public URL buildAccessTokenUrl(String base, String code, String redirect, String clientId, String clientSecret) {
+    public String buildAccessTokenRequest(String base, String code, String redirect, String clientId, String clientSecret) {
         String path = String.format("%s?grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s",
                 base, code, redirect, clientId, clientSecret);
-        try {
-            return new URL(path);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Failed to build access token request URL", e);
-        }
+        return path;
     }
 
     public boolean obtainAccessToken(HttpServletRequest req, String accessTokenUri, String clientId, String clientSecret){
         String code = req.getParameter("code");
         if(code == null || code.length() == 0)
             return false;
-        URL url = buildAccessTokenUrl(accessTokenUri, code, filterHelper.getRootPage(req), clientId, clientSecret);
-        AccessToken token = obtainAccessToken(url);
+
+        String requestPath = buildAccessTokenRequest(accessTokenUri, code, filterHelper.getRootPage(req), clientId, clientSecret);
+        AccessToken token = obtainAccessToken(requestPath);
         if(token != null) {
             req.getSession().setAttribute(FilterConfiguration.ACCESS_TOKEN, token);
             LOG.info(">>>>>>>>>>>>>>>>>>>>>> token >>>>>>>>>>>> " + token);
@@ -46,9 +43,9 @@ public class AccessTokenService {
         return false;
     }
 
-    public AccessToken obtainAccessToken(URL url){
+    public AccessToken obtainAccessToken(String requestPath){
         try {
-            ApiCallResult response = client.invokeApi(url, "Access token");
+            ApiCallResult response = client.obtainToken(requestPath, "Access token");
             if(response == null)
                 return null;
 

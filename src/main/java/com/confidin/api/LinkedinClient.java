@@ -40,18 +40,6 @@ public class LinkedinClient {
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
         }
-
-
-/*
-        HttpSession session = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest().getSession();
-        if(session != null && session.getAttribute(FilterConfiguration.ACCESS_TOKEN) != null){
-            AccessToken token = (AccessToken) session.getAttribute(FilterConfiguration.ACCESS_TOKEN);
-            connection.setRequestProperty("Authorization", "Bearer " + token.getValue());
-            connection.setRequestMethod("GET");
-        }else {
-            connection.setRequestMethod("POST");
-        }
-*/
         connection.setDoOutput(true);
         connection.setUseCaches(false);
 
@@ -59,60 +47,8 @@ public class LinkedinClient {
         return connection;
     }
 
-
-
-    public ApiCallResult getData(String request, String apiName) throws IOException {
-        HttpSession session = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest().getSession(true);
-        URL url = new URL(request +
-                Optional.ofNullable(session.getAttribute(FilterConfiguration.ACCESS_TOKEN))
-                        .map(t -> "&oauth2_access_token=" + ((AccessToken)t).getValue())
-                        .orElse(""));
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        return read(connection, apiName);
-    }
-
-
-    private ApiCallResult read(HttpURLConnection connection, String apiName) throws IOException {
-        ApiCallResult result = new ApiCallResult();
-        result.setStatus(connection.getResponseCode());
-        if (result.getStatus() == HttpURLConnection.HTTP_OK) {
-            LOG.info("{} request succeeded", apiName);
-        }
-        else{
-            LOG.info("{} request failed with {} code", apiName, result.getStatus());
-            StringBuilder errBuffer = new StringBuilder();
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream(), "UTF-8"));
-            String errorLine;
-            while ((errorLine = errorReader.readLine()) != null) {
-                errBuffer.append(errorLine);
-            }
-            result.setErrorMessage(errBuffer.toString());
-            String message = String.format("{} request failed : \n{}", apiName, result.getErrorMessage());
-//            todo: consider to move this validation to caller
-            if(errBuffer.indexOf("authorization code expired") >= 0)
-                return null;
-            LOG.error(message);
-        }
-        String respEnc = connection.getContentEncoding();
-        InputStream is;
-        if (respEnc != null && respEnc.equalsIgnoreCase("gzip")) {
-            is = new GZIPInputStream(connection.getInputStream());
-        } else {
-            is = new BufferedInputStream(connection.getInputStream());
-        }
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-        String li;
-        StringBuilder sb = new StringBuilder();
-        while ((li = reader.readLine()) != null) {
-            sb.append(li);
-        }
-        result.setResponse(sb.toString());
-        return result;
-
-    }
-    public ApiCallResult invokeApi(URL url, String apiName) throws IOException {
-        HttpURLConnection connection = getConnection(url);
+    public ApiCallResult obtainToken(String request, String apiName) throws IOException {
+        HttpURLConnection connection = getConnection(new URL(request));
         PrintWriter out = new PrintWriter(connection.getOutputStream());
         out.write("");
         out.flush();
@@ -153,4 +89,49 @@ public class LinkedinClient {
         result.setResponse(sb.toString());
         return result;
     }
+
+    public ApiCallResult sendGet(String request, String apiName) throws IOException {
+        HttpSession session = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest().getSession(true);
+        URL url = new URL(request +
+                Optional.ofNullable(session.getAttribute(FilterConfiguration.ACCESS_TOKEN))
+                        .map(t -> "&oauth2_access_token=" + ((AccessToken)t).getValue())
+                        .orElse(""));
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        ApiCallResult result = new ApiCallResult();
+        result.setStatus(connection.getResponseCode());
+        if (handleError(result, connection, apiName)) {
+            LOG.info("{} request succeeded", apiName);
+        }
+        return readInputStream(connection, result);
+    }
+
+    private ApiCallResult readInputStream(HttpURLConnection connection, ApiCallResult result) throws IOException {
+        InputStream is = new BufferedInputStream(connection.getInputStream());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+        String li;
+        StringBuilder sb = new StringBuilder();
+        while ((li = reader.readLine()) != null) {
+            sb.append(li);
+        }
+        result.setResponse(sb.toString());
+        return result;
+    }
+
+    private boolean handleError(ApiCallResult result , HttpURLConnection connection, String apiName) throws IOException {
+        if(result.getStatus() == HttpURLConnection.HTTP_OK)
+            return false;
+        LOG.info("{} request failed with {} code", apiName, result.getStatus());
+        StringBuilder errBuffer = new StringBuilder();
+        BufferedReader errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream(), "UTF-8"));
+        String errorLine;
+        while ((errorLine = errorReader.readLine()) != null) {
+            errBuffer.append(errorLine);
+        }
+        result.setErrorMessage(errBuffer.toString());
+        String message = String.format("{} request failed : \n{}", apiName, result.getErrorMessage());
+        LOG.error(message);
+        return true;
+    }
+
 }
