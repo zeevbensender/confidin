@@ -13,7 +13,7 @@ public class Layout {
     //    todo: spring initialization
     ApiService apiService = new ApiService();
     @RequestMapping("/login")
-    public String user() {
+    public UserProfile user() {
         return apiService.getProfile();
     }
 
