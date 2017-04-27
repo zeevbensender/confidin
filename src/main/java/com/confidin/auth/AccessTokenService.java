@@ -45,7 +45,7 @@ public class AccessTokenService {
 
     public AccessToken obtainAccessToken(String requestPath){
         try {
-            ApiCallResult response = client.obtainToken(requestPath, "Access token");
+            ApiCallResult response = client.obtainToken(requestPath);
             if(response == null)
                 return null;
 

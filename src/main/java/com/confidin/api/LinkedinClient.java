@@ -27,67 +27,25 @@ import java.util.zip.GZIPInputStream;
 public class LinkedinClient {
     private final static Logger LOG = LoggerFactory.getLogger(LinkedinClient.class);
 
-    private HttpURLConnection getConnection(URL url) throws IOException {
-        HttpURLConnection connection = null;
-        HttpSession session = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest().getSession();
-        if(session != null && session.getAttribute(FilterConfiguration.ACCESS_TOKEN) != null){
-            AccessToken token = (AccessToken) session.getAttribute(FilterConfiguration.ACCESS_TOKEN);
-            String surl = url.toString();
-            url = new URL(surl + "&oauth2_access_token=" + token.getValue());
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-        }else {
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-        }
+    public ApiCallResult obtainToken(String request) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) new URL(request).openConnection();
+        connection.setRequestMethod("POST");
         connection.setDoOutput(true);
         connection.setUseCaches(false);
 
-        LOG.trace("###### THE REQUEST IS: {}", url.toString());
-        return connection;
-    }
-
-    public ApiCallResult obtainToken(String request, String apiName) throws IOException {
-        HttpURLConnection connection = getConnection(new URL(request));
         PrintWriter out = new PrintWriter(connection.getOutputStream());
         out.write("");
         out.flush();
         out.close();
         ApiCallResult result = new ApiCallResult();
         result.setStatus(connection.getResponseCode());
-        if (result.getStatus() == HttpURLConnection.HTTP_OK) {
-            LOG.info("{} request succeeded", apiName);
+        if (!handleError(result, connection, "obtain token")) {
+            LOG.info("{} request succeeded", "obtain token");
         }
-        else{
-            LOG.info("{} request failed with {} code", apiName, result.getStatus());
-            StringBuilder errBuffer = new StringBuilder();
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream(), "UTF-8"));
-            String errorLine;
-            while ((errorLine = errorReader.readLine()) != null) {
-                errBuffer.append(errorLine);
-            }
-            result.setErrorMessage(errBuffer.toString());
-            String message = String.format("{} request failed : \n{}", apiName, result.getErrorMessage());
-//            todo: consider to move this validation to caller
-            if(errBuffer.indexOf("authorization code expired") >= 0)
-                return null;
-            LOG.error(message);
+        else if(result.getErrorMessage().indexOf("authorization code expired") >= 0){
+            return null;
         }
-        String respEnc = connection.getContentEncoding();
-        InputStream is;
-        if (respEnc != null && respEnc.equalsIgnoreCase("gzip")) {
-            is = new GZIPInputStream(connection.getInputStream());
-        } else {
-            is = new BufferedInputStream(connection.getInputStream());
-        }
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-        String li;
-        StringBuilder sb = new StringBuilder();
-        while ((li = reader.readLine()) != null) {
-            sb.append(li);
-        }
-        result.setResponse(sb.toString());
-        return result;
+        return readInputStream(connection, result);
     }
 
     public ApiCallResult sendGet(String request, String apiName) throws IOException {
