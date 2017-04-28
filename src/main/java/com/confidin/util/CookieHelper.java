@@ -14,7 +14,7 @@ public class CookieHelper {
             return null;
         String value = Arrays.stream(coo).
                 filter(cnam -> cnam.getName().equals(name)).
-                findFirst().map(Cookie::getName).orElse(null);
+                findFirst().map(Cookie::getValue).orElse(null);
         return value;
     }
 }
