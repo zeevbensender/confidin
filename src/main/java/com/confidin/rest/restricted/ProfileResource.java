@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by bensende on 14/04/2017.
@@ -22,10 +24,17 @@ public class ProfileResource {
     }
 
     @RequestMapping("user")
-    public String user() {
+    public Map<String,Map<String, Map<String, String>>> user() {
         String fullName = ((LinkedinPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getName();
-        String result = "{\"userAuthentication\":{\"details\":{\"name\":\"" + fullName + "\"}}}";
+        Map<String, String> details = new HashMap<>();
+        details.put("name", fullName);
+        Map<String, Map<String, String>> uAuth = new HashMap<>();
+        uAuth.put("details", details);
+        Map<String,Map<String, Map<String, String>>> result = new HashMap<>();
+        result.put("userAuthentication", uAuth);
         return result;
+//        String result = "{\"userAuthentication\":{\"details\":{\"name\":\"" + fullName + "\"}}}";
+//        return result;
     }
 
 }
