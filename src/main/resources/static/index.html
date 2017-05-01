@@ -17,10 +17,7 @@
     Login with: <a href="/login">LinkedIn</a>
 </div>
 <div class="container" ng-show="home.authenticated">
-    Logged in as: <span ng-bind="home.user"></span>
-</div>
-<div class="container" ng-show="home.authenticated">
-    Logged in as: <span ng-bind="home.user"></span>
+    Hello <span ng-bind="home.user"></span>
     <div>
         <button ng-click="home.logout()" class="btn btn-primary">Logout</button>
     </div>

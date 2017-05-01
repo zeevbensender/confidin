@@ -1,6 +1,7 @@
 package com.confidin.rest.restricted;
 
 import com.confidin.api.ApiService;
+import com.confidin.auth.LinkedinPrincipal;
 import com.confidin.model.UserProfile;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,8 +16,6 @@ import java.security.Principal;
 @RestController
 @RequestMapping("/")
 public class ProfileResource {
-    //    todo: spring initialization
-    private ApiService apiService = new ApiService();
     @RequestMapping("user/{name}")
     public UserProfile user(@PathVariable String name) {
         return new UserProfile(name, name + "@confidin.com");
@@ -24,12 +23,9 @@ public class ProfileResource {
 
     @RequestMapping("user")
     public String user() {
-        UserProfile user = apiService.getProfile();
-//        data.userAuthentication.details.name
-        String name = "{\"userAuthentication\":{\"details\":{\"name\":\"voldemar\"}}}";
-//        String name = "{ \"name\" : \"" + user.getFirstName() + " " + user.getLastName() + "\"}";
-        return name;
-//        return (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String fullName = ((LinkedinPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getName();
+        String result = "{\"userAuthentication\":{\"details\":{\"name\":\"" + fullName + "\"}}}";
+        return result;
     }
 
 }

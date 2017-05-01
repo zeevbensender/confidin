@@ -1,8 +1,10 @@
 package com.confidin.auth;
 
 import com.confidin.api.ApiCallResult;
+import com.confidin.api.ApiService;
 import com.confidin.api.LinkedinClient;
 import com.confidin.config.FilterConfiguration;
+import com.confidin.model.UserProfile;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,8 +13,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +25,8 @@ public class AccessTokenService {
     private FilterHelper filterHelper = new FilterHelper();
 //    todo: spring initialization
     private LinkedinClient client = new LinkedinClient();
+    //    todo: spring initialization
+    private ApiService apiService = new ApiService();
     ObjectMapper mapper = new ObjectMapper();
     public String buildAccessTokenRequest(String base, String code, String redirect, String clientId, String clientSecret) {
         String path = String.format("%s?grant_type=authorization_code&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s",
@@ -50,8 +52,13 @@ public class AccessTokenService {
             };
             List<GrantedAuthority> auths = new ArrayList<>();
             auths.add(authority);
+            LinkedinAuthenticationToken authenticationToken = new LinkedinAuthenticationToken(auths, token);
+
             SecurityContextHolder.getContext().
-                    setAuthentication(new LinkedinAuthenticationToken(auths, token));
+                    setAuthentication(authenticationToken);
+            UserProfile profile = apiService.getProfile();
+            LinkedinPrincipal principal = new LinkedinPrincipal(profile);
+            authenticationToken.setPrincipal(principal);
             return true;
         }
         return false;

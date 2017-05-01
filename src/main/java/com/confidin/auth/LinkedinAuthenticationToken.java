@@ -17,9 +17,12 @@ public class LinkedinAuthenticationToken extends AbstractAuthenticationToken {
     public LinkedinAuthenticationToken(Collection<? extends GrantedAuthority> authorities, AccessToken accessToken) {
         super(authorities);
         super.setAuthenticated(true);
-        principal = new LinkedinPrincipal(accessToken);
         setDetails(accessToken);
         this.accessToken = accessToken;
+    }
+
+    public void setPrincipal(AuthenticatedPrincipal principal) {
+        this.principal = principal;
     }
 
     @Override
