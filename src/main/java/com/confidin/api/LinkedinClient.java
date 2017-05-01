@@ -1,14 +1,9 @@
 package com.confidin.api;
 
-import com.confidin.auth.AccessToken;
-import com.confidin.config.FilterConfiguration;
+import com.confidin.auth.TokenHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,13 +14,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Optional;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created by bensende on 23/04/2017.
  */
 public class LinkedinClient {
     private final static Logger LOG = LoggerFactory.getLogger(LinkedinClient.class);
+    //    todo: spring initialization
+    private TokenHolder tokenHolder = new TokenHolder();
 
     public ApiCallResult obtainToken(String request) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(request).openConnection();
@@ -49,11 +45,10 @@ public class LinkedinClient {
     }
 
     public ApiCallResult sendGet(String request, String apiName) throws IOException {
-        HttpSession session = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest().getSession(true);
-        URL url = new URL(request +
-                Optional.ofNullable(session.getAttribute(FilterConfiguration.ACCESS_TOKEN))
-                        .map(t -> "&oauth2_access_token=" + ((AccessToken)t).getValue())
-                        .orElse(""));
+
+        URL url = new URL(request + Optional.ofNullable(tokenHolder.getToken()).
+                map(tkn -> "&oauth2_access_token=" + tkn).
+                orElse(""));
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         ApiCallResult result = new ApiCallResult();
@@ -63,6 +58,7 @@ public class LinkedinClient {
         }
         return readInputStream(connection, result);
     }
+
 
     private ApiCallResult readInputStream(HttpURLConnection connection, ApiCallResult result) throws IOException {
         InputStream is = new BufferedInputStream(connection.getInputStream());

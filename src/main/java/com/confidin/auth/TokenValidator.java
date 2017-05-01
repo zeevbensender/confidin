@@ -1,7 +1,5 @@
 package com.confidin.auth;
 
-import com.confidin.config.FilterConfiguration;
-
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
@@ -9,9 +7,11 @@ import java.util.Optional;
  * Created by bensende on 14/04/2017.
  */
 public class TokenValidator {
+    //    todo: spring initialization
+    private TokenHolder tokenHolder = new TokenHolder();
     public boolean validateToken(HttpServletRequest req){
 
-        return Optional.ofNullable(req.getSession(true).getAttribute(FilterConfiguration.ACCESS_TOKEN)).
+        return Optional.ofNullable(tokenHolder.getToken()).
                 map(t -> t != null).
                 orElse(false);
     }

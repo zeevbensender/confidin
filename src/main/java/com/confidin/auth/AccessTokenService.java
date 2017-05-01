@@ -42,7 +42,6 @@ public class AccessTokenService {
         String requestPath = buildAccessTokenRequest(accessTokenUri, code, filterHelper.getRootPage(req), clientId, clientSecret);
         AccessToken token = obtainAccessToken(requestPath);
         if(token != null) {
-            req.getSession().setAttribute(FilterConfiguration.ACCESS_TOKEN, token);
             LOG.info(">>>>>>>>>>>>>>>>>>>>>> token >>>>>>>>>>>> " + token);
             GrantedAuthority authority = new GrantedAuthority() {
                 @Override

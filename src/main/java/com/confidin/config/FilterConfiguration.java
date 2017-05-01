@@ -23,10 +23,12 @@ public class FilterConfiguration {
     @Value("${security.oauth2.client.userAuthorizationUri}")
     private String userAuthorizationUri;
     public static final String CLIENT_SECRET = "CLIENT_SECRET";
+
+
+
     public static final String CLIENT_ID = "CLIENT_ID";
     public static final String AUTHORIZATION_URI = "AUTHORIZATION_URI";
     public static final String ACCESS_TOKEN_URI = "ACCESS_TOKEN_URI";
-    public static final String ACCESS_TOKEN = "ACCESS_TOKEN";
 
     @Bean
     public FilterRegistrationBean authFilterRegistration() {

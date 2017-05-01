@@ -24,6 +24,7 @@ public class AuthFilter implements Filter {
     private TokenValidator tokenValidator = new TokenValidator();
     private FilterHelper filterHelper = new FilterHelper();
     private AccessTokenService tokenService = new AccessTokenService();
+    private TokenHolder tokenHolder = new TokenHolder();
     private String clientId;
     private String clientSecret;
     private String authorizationUri;
@@ -53,7 +54,7 @@ public class AuthFilter implements Filter {
                 req.getRequestURI(),
                 CookieHelper.getCookie("JSESSIONID", req),
                 req.getHeader("referer"),
-                req.getSession().getAttribute(FilterConfiguration.ACCESS_TOKEN)
+                tokenHolder.getToken()
                 );
         if(tokenValidator.validateToken(req)){
             LOG.debug("Token was found in the session. Proceeds to the next filter in the chain.");
