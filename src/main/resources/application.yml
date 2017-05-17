@@ -1,15 +1,13 @@
 security:
   oauth2:
     client:
-      clientId: id
-      clientSecret: secret
       accessTokenUri: https://www.linkedin.com/oauth/v2/accessToken
       userAuthorizationUri: https://www.linkedin.com/oauth/v2/authorization?client_id=%s&response_type=code&redirect_uri=%s
       tokenName: access_token
       authenticationScheme: query
       clientAuthenticationScheme: form
     resource:
-      userInfoUri: https://api.linkedin.com/v1/people/~?format=json&email-address=bensender@gmail.com
+      userInfoUri: https://api.linkedin.com/v1/people/~?format=json
 logging:
   level:
     org:

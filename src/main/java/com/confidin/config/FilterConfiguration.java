@@ -14,9 +14,9 @@ import javax.servlet.Filter;
 @Configuration
 public class FilterConfiguration {
 
-    @Value("${security.oauth2.client.clientSecret}")
+    @Value("${clientSecret}")
     private String clientSecret;
-    @Value("${security.oauth2.client.clientId}")
+    @Value("${clientId}")
     private String clientId;
     @Value("${security.oauth2.client.accessTokenUri}")
     private String accessTokenUri;
@@ -36,7 +36,6 @@ public class FilterConfiguration {
         FilterRegistrationBean  registration = new FilterRegistrationBean ();
         registration.setFilter(oauth2Filter());
         registration.addUrlPatterns("/*");
-//        registration.addUrlPatterns("/profile/*");
         registration.addInitParameter(CLIENT_SECRET, clientSecret);
         registration.addInitParameter(CLIENT_ID, clientId);
         registration.addInitParameter(AUTHORIZATION_URI, userAuthorizationUri);
