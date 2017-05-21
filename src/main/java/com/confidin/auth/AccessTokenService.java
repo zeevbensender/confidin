@@ -43,14 +43,8 @@ public class AccessTokenService {
         AccessToken token = obtainAccessToken(requestPath);
         if(token != null) {
             LOG.info(">>>>>>>>>>>>>>>>>>>>>> token >>>>>>>>>>>> " + token);
-            GrantedAuthority authority = new GrantedAuthority() {
-                @Override
-                public String getAuthority() {
-                    return "ROLE_ADMIN";
-                }
-            };
             List<GrantedAuthority> auths = new ArrayList<>();
-            auths.add(authority);
+            auths.add(() -> Roles.ROLE_PROFILE_OWNER);
             LinkedinAuthenticationToken authenticationToken = new LinkedinAuthenticationToken(auths, token);
 
             SecurityContextHolder.getContext().
